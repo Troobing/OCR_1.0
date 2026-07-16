@@ -1,0 +1,23 @@
+# Python 虚拟环境
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+
+# 敏感配置
+.env
+
+# 临时文件
+uploads/*
+!uploads/.gitkeep
+outputs/*
+!outputs/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
