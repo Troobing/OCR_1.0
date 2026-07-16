@@ -13,7 +13,15 @@
 
 ## 快速开始
 
-### 1. 安装依赖
+### 桌面应用（推荐）
+
+下载 `dist/OCR-Agent.exe`，双击运行——弹出独立窗口，无需安装任何环境。
+
+> 如需自行打包：`cd backend && venv\Scripts\python.exe -m PyInstaller --onefile --noconsole --icon app.ico --add-data "../frontend/dist;frontend/dist" --name "OCR-Agent" desktop.py`
+
+### 开发模式（修改代码时使用）
+
+#### 1. 安装依赖
 
 ```bash
 # 后端
@@ -66,6 +74,8 @@ ocr-agent/
 ├── README.md
 │
 ├── backend/                         # Python FastAPI 后端
+│   ├── desktop.py                   # 桌面应用入口（双击启动）
+│   ├── app.ico                      # 应用图标
 │   ├── requirements.txt
 │   └── app/
 │       ├── main.py                  # 入口：FastAPI 实例、CORS、路由注册
