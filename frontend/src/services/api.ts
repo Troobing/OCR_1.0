@@ -66,10 +66,6 @@ export async function extractContent(
   return res.data;
 }
 
-export async function syncConfig(config: ApiConfig): Promise<void> {
-  await http.post('/config', config);
-}
-
 export async function downloadWord(
   imageIds: string[],
   contents: string[],

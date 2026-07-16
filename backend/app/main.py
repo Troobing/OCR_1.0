@@ -41,6 +41,3 @@ app.include_router(extract.router, prefix="/api")
 
 from app.routers import download
 app.include_router(download.router, prefix="/api")
-
-from app.routers import config
-app.include_router(config.router, prefix="/api")

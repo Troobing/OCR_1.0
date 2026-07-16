@@ -1,12 +1,12 @@
 /**
- * API 设置面板 — 配置 LLM 服务端地址、Key、模型，保存到 localStorage + 同步后端
+ * API 设置面板 — 配置 LLM 服务端地址、Key、模型，保存到浏览器本地
  * Config: 模型选项列表、默认值、表单字段
  */
 
 import { useState } from 'react';
 import { Modal, Form, Input, Select, Button, message } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
-import { syncConfig, type ApiConfig } from '../services/api';
+import { type ApiConfig } from '../services/api';
 
 interface Props {
   config: ApiConfig;
@@ -31,11 +31,9 @@ export default function ApiKeyPanel({ config, onSave }: Props) {
   };
 
   const handleSave = () => {
-    form.validateFields().then(async (values) => {
+    form.validateFields().then((values) => {
       onSave(values);
-      try { await syncConfig(values); } catch {
-        message.warning('配置已保存到本地，但未能同步到后端（后端可能未启动）');
-      }
+      message.success('已保存');
       setOpen(false);
     });
   };

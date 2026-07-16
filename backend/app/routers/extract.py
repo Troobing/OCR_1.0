@@ -1,14 +1,13 @@
 """
 提取路由 — POST /api/extract
 接收图片 ID 列表 + LLM 配置 → 逐张调用 LLM API → 返回提取的文字和 LaTeX 公式
-Config: 并发控制、错误处理策略、API 配置 fallback 优先级
+Config: 并发控制、错误处理策略
 """
 
 from fastapi import APIRouter, HTTPException
 from app.models.schemas import ExtractRequest, ExtractResponse, ExtractResult
 from app.services.llm_client import extract_from_image, verify_extraction
 from app.utils.file_utils import get_image_path
-from app.routers.config import get_backend_config
 
 router = APIRouter(tags=["提取"])
 
@@ -19,13 +18,11 @@ async def extract_content(request: ExtractRequest):
     if not request.image_ids:
         raise HTTPException(status_code=400, detail="请至少指定一张图片")
 
-    # 配置 fallback：优先用请求里的，没有则从后端内存取
-    backend_config = get_backend_config()
-    base_url = request.base_url or backend_config["base_url"]
-    model = request.model or backend_config["model"]
-    api_key = (request.api_key or "").strip() or backend_config.get("api_key", "")
+    api_key = request.api_key.strip()
     if not api_key:
-        raise HTTPException(status_code=400, detail="API Key 不能为空，请在前端设置或请求中提供")
+        raise HTTPException(status_code=400, detail="API Key 不能为空，请在前端设置")
+    base_url = request.base_url or "https://api.uniapi.io/v1"
+    model = request.model or "gpt-4o"
 
     results = []
     for image_id in request.image_ids:
@@ -52,7 +49,7 @@ async def extract_content(request: ExtractRequest):
                 )
                 content = verified
             except Exception:
-                pass  # 校验失败不中断，保留首次提取结果
+                pass
 
             results.append(ExtractResult(
                 image_id=image_id, filename=image_path.name,

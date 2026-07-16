@@ -3,7 +3,7 @@
  * Config: 页面布局、步骤条、左右栏比例、按钮交互
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   Layout, Row, Col, Steps, Button, message, Spin, Dropdown, Tag,
 } from 'antd';
@@ -17,7 +17,7 @@ import ImageList from './components/ImageList';
 import ResultViewer from './components/ResultViewer';
 import ExportPanel from './components/ExportPanel';
 import ApiKeyPanel from './components/ApiKeyPanel';
-import { uploadImages, extractContent, downloadWord, syncConfig } from './services/api';
+import { uploadImages, extractContent, downloadWord } from './services/api';
 import type { ImageInfo, ExtractResult, ApiConfig } from './services/api';
 
 const { Header, Content } = Layout;
@@ -66,12 +66,6 @@ export default function App() {
   const [uploadKey, setUploadKey] = useState(0);
   const pendingFilesRef = useRef<ImageItem[]>([]);
   const uploadTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  // 启动时同步本地配置到后端
-  useEffect(() => {
-    const cfg = loadConfig();
-    if (cfg.api_key) { syncConfig(cfg).catch(() => {}); }
-  }, []);
 
   // ─── 文件上传管理 ───
 
@@ -168,7 +162,6 @@ export default function App() {
   const handleSaveConfig = useCallback((config: ApiConfig) => {
     setApiConfig(config);
     saveConfig(config);
-    message.success('API 设置已保存（仅存储于浏览器本地）');
   }, []);
 
   const handleDownload = useCallback(async (merge: boolean) => {
