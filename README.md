@@ -37,7 +37,7 @@ npm install
 | API Key | `sk-xxxx` |
 | 模型 | `gpt-4o` |
 
-> 模型必须支持图片识别（Vision）。配置自动保存到浏览器本地和后端内存，无需每次填写。
+> 模型必须支持图片识别（Vision）。配置保存在浏览器本地，刷新/重启不丢失。
 
 ### 3. 启动
 
@@ -66,8 +66,6 @@ ocr-agent/
 ├── README.md
 │
 ├── backend/                         # Python FastAPI 后端
-│   ├── .env                         # 实际配置（API Key 等，不提交 Git）
-│   ├── .env.example                 # 配置模板
 │   ├── requirements.txt
 │   └── app/
 │       ├── main.py                  # 入口：FastAPI 实例、CORS、路由注册
@@ -75,8 +73,7 @@ ocr-agent/
 │       ├── routers/
 │       │   ├── upload.py            # POST /api/upload   — 图片上传
 │       │   ├── extract.py           # POST /api/extract  — AI 提取 + 自我校验
-│       │   ├── download.py          # POST /api/download — Word 文件下载
-│       │   └── config.py            # POST/GET /api/config — API 配置同步
+│       │   └── download.py          # POST /api/download — Word 文件下载
 │       ├── services/
 │       │   ├── llm_client.py        # LLM API 调用（图片编码 + 提取 + 校验）
 │       │   ├── prompt.py            # System / User / Verify Prompt 模板
@@ -127,7 +124,5 @@ ocr-agent/
 | POST | `/api/upload` | 上传图片（multipart/form-data, field: files） |
 | POST | `/api/extract` | AI 提取文字和公式 |
 | POST | `/api/download` | 生成并下载 Word 文档 |
-| POST | `/api/config` | 同步 API 配置到后端内存 |
-| GET | `/api/config` | 获取后端当前配置 |
 
 启动后端后访问 `http://localhost:8000/docs` 查看 Swagger 交互式文档。
