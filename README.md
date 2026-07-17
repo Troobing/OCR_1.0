@@ -65,7 +65,7 @@ cd ocr-agent\backend
 venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 # 终端 2 — 前端
-cd ocr-backend\frontend
+cd ocr-agent\frontend
 npx vite
 ```
 
