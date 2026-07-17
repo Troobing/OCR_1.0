@@ -1,5 +1,7 @@
 """
 配置持久化 — API Key 加密存到 config.json，用本机特征码做密钥
+Config: 加密密钥、存储路径、默认值
+（桌面模式下保存和读取 API 配置）
 """
 
 import hashlib
