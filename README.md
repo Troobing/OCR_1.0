@@ -17,7 +17,7 @@
 
 下载 `OCR-Agent.exe`，双击运行，弹出独立窗口。
 
-> 自行打包：先 `npm install` + `pip install -r requirements.txt`，然后双击 `build.ps1`
+> 开发者自行打包：装好依赖后双击 `build.ps1`
 
 ### 开发模式（修改代码时使用）
 
