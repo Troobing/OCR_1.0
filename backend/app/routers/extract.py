@@ -7,7 +7,7 @@ Config: 并发控制、错误处理策略
 from fastapi import APIRouter, HTTPException
 from app.models.schemas import ExtractRequest, ExtractResponse, ExtractResult
 from app.services.llm_client import extract_from_image, verify_extraction
-from app.utils.file_utils import get_image_path
+from app.utils.file_utils import get_image_bytes
 
 router = APIRouter(tags=["提取"])
 
@@ -27,23 +27,17 @@ async def extract_content(request: ExtractRequest):
     results = []
     for image_id in request.image_ids:
         try:
-            image_path = get_image_path(image_id)
-            if not image_path.exists():
-                results.append(ExtractResult(
-                    image_id=image_id, filename="未知", content="",
-                    status="error", error="图片文件不存在，可能已被清理，请重新上传",
-                ))
-                continue
+            image_data, mime_type = get_image_bytes(image_id)
 
             content = await extract_from_image(
-                image_path=str(image_path),
+                image_data=image_data, mime_type=mime_type,
                 api_key=api_key, base_url=base_url, model=model,
             )
 
-            # 自我校验：把首轮结果发回 AI 对照原图修正。失败则用原文
+            # 自我校验：把首轮结果发回 AI 对照原图修正
             try:
                 verified, _ = await verify_extraction(
-                    image_path=str(image_path),
+                    image_data=image_data, mime_type=mime_type,
                     extracted_text=content,
                     api_key=api_key, base_url=base_url, model=model,
                 )
@@ -52,20 +46,23 @@ async def extract_content(request: ExtractRequest):
                 pass
 
             results.append(ExtractResult(
-                image_id=image_id, filename=image_path.name,
+                image_id=image_id, filename=image_id,
                 content=content, status="success", error=None,
             ))
 
+        except FileNotFoundError:
+            results.append(ExtractResult(
+                image_id=image_id, filename="未知", content="",
+                status="error", error="图片不存在，请重新上传",
+            ))
         except ValueError as e:
             results.append(ExtractResult(
-                image_id=image_id,
-                filename=image_path.name if image_path.exists() else "未知",
+                image_id=image_id, filename="未知",
                 content="", status="error", error=str(e),
             ))
         except Exception as e:
             results.append(ExtractResult(
-                image_id=image_id,
-                filename=image_path.name if image_path.exists() else "未知",
+                image_id=image_id, filename="未知",
                 content="", status="error", error=f"调用 AI 失败：{str(e)}",
             ))
 

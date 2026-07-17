@@ -1,24 +1,20 @@
 """
-文件工具 — 图片校验、保存、获取路径、删除、过期清理
-Config: 允许的图片格式、大小上限、存储路径
+文件工具 — 图片校验、内存存储、获取图片数据
+Config: 允许的图片格式、大小上限
 """
 
 import os
+import io
 import uuid
-from pathlib import Path
 from PIL import Image
 
 # ─── 常量 ───
 
-import sys
-if getattr(sys, "frozen", False):
-    # PyInstaller 打包 → 存到 .exe 所在目录，持久化且用户可见
-    UPLOAD_DIR = Path(sys.executable).parent / "uploads"
-else:
-    UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)  # 确保上传目录存在（打包后临时路径中可能不存在）
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 MAX_FILE_SIZE = 20 * 1024 * 1024
+
+# 内存存储：image_id → (bytes, filename)
+_image_store: dict[str, tuple[bytes, str]] = {}
 
 # ─── 工具函数 ───
 
@@ -38,28 +34,18 @@ def validate_image(filename: str, file_size: int) -> None:
 
 def save_uploaded_image(file_data: bytes, original_filename: str) -> tuple[str, int, int]:
     ext = get_extension(original_filename)
-    unique_name = f"{uuid.uuid4().hex}{ext}"
-    file_path = UPLOAD_DIR / unique_name
-    with open(file_path, "wb") as f:
-        f.write(file_data)
-    with Image.open(file_path) as img:
+    image_id = f"{uuid.uuid4().hex}{ext}"
+    _image_store[image_id] = (file_data, original_filename)
+    with Image.open(io.BytesIO(file_data)) as img:
         width, height = img.size
-    return unique_name, width, height
+    return image_id, width, height
 
-def get_image_path(image_id: str) -> Path:
-    return UPLOAD_DIR / image_id
-
-def delete_image(image_id: str) -> None:
-    file_path = UPLOAD_DIR / image_id
-    if file_path.exists():
-        file_path.unlink()
-
-def cleanup_old_files(max_age_hours: int = 24) -> int:
-    import time
-    count = 0
-    cutoff = time.time() - max_age_hours * 3600
-    for file_path in UPLOAD_DIR.iterdir():
-        if file_path.is_file() and file_path.stat().st_mtime < cutoff:
-            file_path.unlink()
-            count += 1
-    return count
+def get_image_bytes(image_id: str) -> tuple[bytes, str]:
+    """返回 (图片二进制数据, MIME类型如 image/png)"""
+    if image_id not in _image_store:
+        raise FileNotFoundError(f"图片 {image_id} 不存在，请重新上传")
+    data, _ = _image_store[image_id]
+    ext = get_extension(image_id)
+    mime_map = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+                ".webp": "image/webp", ".bmp": "image/bmp"}
+    return data, mime_map.get(ext, "image/png")
