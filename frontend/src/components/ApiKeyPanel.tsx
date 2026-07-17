@@ -3,6 +3,7 @@
  * Config: 模型选项列表、默认值、表单字段
 （右上角 API 设置弹窗）
  */
+ * Skill：Ant Design Modal、Form 表单
 
 import { useState } from 'react';
 import { Modal, Form, Input, Select, Button, message } from 'antd';

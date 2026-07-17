@@ -2,6 +2,7 @@
 LLM 客户端 — 图片 base64 编码 + 调用 OpenAI 兼容 API 提取图文内容
 Config: base_url、model、temperature、max_tokens、frequency_penalty
 （真正调用 AI 的环节）
+Skill：OpenAI SDK、base64、Data URL
 """
 
 import base64

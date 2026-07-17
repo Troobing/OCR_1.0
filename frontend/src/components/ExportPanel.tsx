@@ -3,6 +3,7 @@
  * Config: 按钮文案与顺序、剪贴板逻辑
 （提取结果下方的操作按钮）
  */
+ * Skill：Clipboard API、Blob 下载
 
 import { Button, Space, message } from 'antd';
 import { CopyOutlined, DownloadOutlined, FileWordOutlined } from '@ant-design/icons';

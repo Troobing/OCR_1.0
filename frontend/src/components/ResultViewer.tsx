@@ -3,6 +3,7 @@
  * Config: KaTeX 渲染参数、公式/文字样式、正则匹配规则
 （提取结果显示区，含公式渲染）
  */
+ * Skill：KaTeX、dangerouslySetInnerHTML、正则
 
 import { useMemo } from 'react';
 import katex from 'katex';

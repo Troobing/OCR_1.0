@@ -3,6 +3,7 @@ OCR Agent — 后端应用入口
 负责：FastAPI 实例创建、CORS 跨域配置、路由注册
 Config: 路由注册、CORS 白名单、FastAPI 元数据
 （服务启动 — 双击exe时最先执行的文件）
+Skill：FastAPI、CORS、StaticFiles
 """
 
 import sys

@@ -2,6 +2,7 @@
 Word 文档生成 — 将 AI 提取内容（文字 + $...$/$$...$$ 公式）渲染为 .docx
 Config: 字体/字号/页边距、公式转换 XSLT、合并/分开下载逻辑
 （生成可编辑的 Word 文档）
+Skill：python-docx、XSLT、LaTeX→MathML→OMML
 
 处理流水线：
   解析内容(分离文字/公式) → LaTeX → MathML → XSLT → OMML → python-docx 拼装 .docx

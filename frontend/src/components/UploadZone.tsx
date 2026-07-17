@@ -3,6 +3,7 @@
  * Config: 允许的文件格式、大小上限、粘贴事件
 （页面左上角拖拽上传框）
  */
+ * Skill：Ant Design Dragger、Clipboard API
 
 import { useCallback, useEffect } from 'react';
 import { Upload, message } from 'antd';

@@ -3,6 +3,7 @@
  * Config: 页面布局、步骤条、左右栏比例、按钮交互
 （页面主体：左栏传图+列表，右栏提取结果）
  */
+ * Skill：React 状态提升、useRef 防抖、Ant Design Layout
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {

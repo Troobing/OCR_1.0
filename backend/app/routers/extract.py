@@ -3,6 +3,7 @@
 接收图片 ID 列表 + LLM 配置 → 逐张调用 LLM API → 返回文字和 LaTeX 公式
 Config: 并发控制、错误处理策略
 （AI 提取 + 自我校验 API）
+Skill：async/await、逐图容错
 """
 
 from fastapi import APIRouter, HTTPException

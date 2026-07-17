@@ -2,6 +2,7 @@
 桌面应用入口 — 双击启动后端 + 原生窗口
 Config: 端口、窗口大小、Edge 路径
 （双击 exe 时最先执行的文件）
+Skill：threading、pywebview
 """
 
 import threading
