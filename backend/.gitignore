@@ -16,7 +16,6 @@ __pycache__/
 dist/
 build/
 *.spec
-../OCR-Agent.exe
 
 # 系统文件
 .DS_Store
