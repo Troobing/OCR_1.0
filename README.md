@@ -15,9 +15,9 @@
 
 ### 桌面应用（推荐）
 
-下载 `dist/OCR-Agent.exe`，双击运行——弹出独立窗口，无需安装任何环境。
+下载 `OCR-Agent.exe`，双击运行，弹出独立窗口。
 
-> 如需自行打包：`cd backend && venv\Scripts\python.exe -m PyInstaller --onefile --noconsole --icon app.ico --add-data "../frontend/dist;frontend/dist" --name "OCR-Agent" desktop.py`
+> 自行打包：先 `npm install` + `pip install -r requirements.txt`，然后双击 `build.ps1`
 
 ### 开发模式（修改代码时使用）
 
@@ -50,12 +50,12 @@ npm install
 ### 3. 启动
 
 ```powershell
-# 终端 1 — 后端（在 ocr-agent 目录下执行）
-cd ocr-agent\backend
+# 终端 1 — 后端
+cd backend
 venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
-# 终端 2 — 前端（在 ocr-agent 目录下执行）
-cd ocr-agent\frontend
+# 终端 2 — 前端
+cd frontend
 npx vite
 ```
 
@@ -72,46 +72,48 @@ npx vite
 ```
 ocr-agent/
 ├── README.md
+├── build.ps1                       # 一键打包桌面exe
+├── .gitignore
 │
-├── backend/                         # Python FastAPI 后端
-│   ├── desktop.py                   # 桌面应用入口（双击启动）
-│   ├── app.ico                      # 应用图标
+├── backend/                        # Python FastAPI 后端
+│   ├── desktop.py                  # 桌面应用入口
+│   ├── app.ico                     # 应用图标
 │   ├── requirements.txt
 │   └── app/
-│       ├── main.py                  # 入口：FastAPI 实例、CORS、路由注册
-│       ├── models/schemas.py        # Pydantic 数据模型（请求体 & 响应体）
+│       ├── main.py                 # 入口：CORS、路由、静态文件
+│       ├── models/schemas.py       # 请求/响应数据结构
 │       ├── routers/
-│       │   ├── upload.py            # POST /api/upload   — 图片上传
-│       │   ├── extract.py           # POST /api/extract  — AI 提取 + 自我校验
-│       │   └── download.py          # POST /api/download — Word 文件下载
+│       │   ├── upload.py           # 图片上传
+│       │   ├── extract.py          # AI 提取 + 自我校验
+│       │   └── download.py         # Word 下载
 │       ├── services/
-│       │   ├── llm_client.py        # LLM API 调用（图片编码 + 提取 + 校验）
-│       │   ├── prompt.py            # System / User / Verify Prompt 模板
-│       │   └── word_generator.py    # Word .docx 生成（LaTeX → OMML）
+│       │   ├── llm_client.py       # LLM API 调用
+│       │   ├── prompt.py           # Prompt 模板
+│       │   └── word_generator.py   # Word 生成（LaTeX → OMML）
 │       └── utils/
-│           └── file_utils.py        # 图片校验、保存、清理
+│           └── file_utils.py       # 图片校验、内存存储
 │
-└── frontend/                        # React + TypeScript 前端
-    ├── vite.config.ts               # Vite 构建配置 + /api 代理
+└── frontend/                       # React + TypeScript 前端
+    ├── vite.config.ts              # Vite 构建 + API 代理
     ├── index.html
     └── src/
-        ├── main.tsx                 # 入口 + Ant Design 主题色
-        ├── App.tsx                  # 主页面：状态管理 + 布局 + 组件拼装
+        ├── main.tsx                # 入口 + 主题色
+        ├── App.tsx                 # 主页面
         ├── App.css
         ├── services/
-        │   └── api.ts               # HTTP 请求封装
+        │   └── api.ts              # HTTP 请求
         └── components/
-            ├── UploadZone.tsx       # 上传区域（拖拽/点击/粘贴）
+            ├── UploadZone.tsx       # 上传区域
             ├── ImageList.tsx        # 图片列表
-            ├── ApiKeyPanel.tsx      # API 设置面板
-            ├── ResultViewer.tsx     # 结果渲染（KaTeX 公式）
-            └── ExportPanel.tsx      # 导出面板（复制/下载）
+            ├── ApiKeyPanel.tsx      # API 设置
+            ├── ResultViewer.tsx     # 结果渲染（KaTeX）
+            └── ExportPanel.tsx      # 导出按钮
 ```
 
 ## 工作原理
 
 ```
-上传图片 → 保存到磁盘 → 返回图片 ID
+上传图片 → 存到内存 → 返回图片 ID
     ↓
 前端发起提取请求（带图片 ID + API 配置）
     ↓
