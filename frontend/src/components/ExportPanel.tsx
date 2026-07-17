@@ -1,6 +1,7 @@
 /**
  * 导出面板 — 复制全文 / 下载 Word（分开） / 下载 Word（合并）
  * Config: 按钮文案与顺序、剪贴板逻辑
+（提取结果下方的操作按钮）
  */
 
 import { Button, Space, message } from 'antd';

@@ -2,6 +2,7 @@
 下载路由 — POST /api/download
 接收提取内容 → 调用 word_generator 生成 .docx → StreamingResponse 返回文件下载
 Config: 下载文件名、单文件/zip 逻辑、Content-Disposition 头
+（生成并下载 Word 文件 API）
 """
 
 import io

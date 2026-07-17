@@ -1,6 +1,7 @@
 /**
  * 上传区域 — 拖拽/点击/Ctrl+V 粘贴图片，校验格式和大小后传给父组件
  * Config: 允许的文件格式、大小上限、粘贴事件
+（页面左上角拖拽上传框）
  */
 
 import { useCallback, useEffect } from 'react';

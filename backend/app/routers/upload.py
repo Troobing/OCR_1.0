@@ -2,6 +2,7 @@
 上传路由 — POST /api/upload
 接收图片文件 → 校验格式/大小 → 存到内存 → 返回图片元信息
 Config: 文件格式白名单、大小上限、存储路径
+（上传图片 API）
 """
 
 from fastapi import APIRouter, UploadFile, File, HTTPException

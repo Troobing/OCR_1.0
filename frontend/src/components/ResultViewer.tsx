@@ -1,6 +1,7 @@
 /**
  * 结果渲染 — 将 LLM 提取的混合文字+LaTeX公式文本渲染为可视化内容
  * Config: KaTeX 渲染参数、公式/文字样式、正则匹配规则
+（提取结果显示区，含公式渲染）
  */
 
 import { useMemo } from 'react';

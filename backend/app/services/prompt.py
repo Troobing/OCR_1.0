@@ -1,6 +1,7 @@
 """
 提示词模板 — 发给 LLM 的 System Prompt 和 User Prompt
 Config: System Prompt 排版保真规则、LaTeX 输出格式、错误标记
+（发给 AI 的指令模板）
 """
 
 SYSTEM_PROMPT = """\

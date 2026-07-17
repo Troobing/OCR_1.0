@@ -1,6 +1,7 @@
 /**
  * API 设置面板 — 配置 LLM 服务端地址、Key、模型，保存到浏览器本地
  * Config: 模型选项列表、默认值、表单字段
+（右上角 API 设置弹窗）
  */
 
 import { useState } from 'react';

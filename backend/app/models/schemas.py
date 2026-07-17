@@ -1,6 +1,7 @@
 """
 Pydantic 数据模型 — 所有接口的请求体 & 响应体结构
 Config: 上传返回字段、提取请求参数、下载请求格式
+（前端与后端通信的数据格式定义）
 """
 
 from pydantic import BaseModel
