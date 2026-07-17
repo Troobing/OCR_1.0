@@ -8,12 +8,6 @@ __pycache__/
 # 敏感配置
 .env
 
-# 临时文件
-uploads/*
-!uploads/.gitkeep
-outputs/*
-!outputs/.gitkeep
-
 # IDE
 .vscode/
 .idea/
