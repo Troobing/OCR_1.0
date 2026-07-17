@@ -10,7 +10,12 @@ from PIL import Image
 
 # ─── 常量 ───
 
-UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
+import sys
+if getattr(sys, "frozen", False):
+    # PyInstaller 打包 → 存到 .exe 所在目录，持久化且用户可见
+    UPLOAD_DIR = Path(sys.executable).parent / "uploads"
+else:
+    UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)  # 确保上传目录存在（打包后临时路径中可能不存在）
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 MAX_FILE_SIZE = 20 * 1024 * 1024
