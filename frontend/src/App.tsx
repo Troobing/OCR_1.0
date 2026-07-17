@@ -2,8 +2,9 @@
  * 主页面 — 全局状态管理、双栏布局、上传/提取/结果/导出拼接为完整页面
  * Config: 页面布局、步骤条、左右栏比例、按钮交互
 （页面主体：左栏传图+列表，右栏提取结果）
- */
  * Skill：React 状态提升、useRef 防抖、Ant Design Layout
+ */
+ 
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
@@ -182,7 +183,7 @@ export default function App() {
 
     setDownloading(true);
     try {
-      const { path } = await downloadWord(
+      await downloadWord(
         okList.map((r) => r.image_id), okList.map((r) => r.content), merge,
       );
       message.success('下载完成');
