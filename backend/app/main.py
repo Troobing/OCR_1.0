@@ -58,6 +58,9 @@ app.include_router(extract.router, prefix="/api")
 from app.routers import download
 app.include_router(download.router, prefix="/api")
 
+from app.routers import config
+app.include_router(config.router, prefix="/api")
+
 # ─── 前端静态文件（仅在生产模式，dist/ 存在时生效）───
 
 if FRONTEND_DIST.exists():

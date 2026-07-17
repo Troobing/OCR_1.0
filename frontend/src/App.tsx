@@ -4,7 +4,7 @@
 （页面主体：左栏传图+列表，右栏提取结果）
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Layout, Row, Col, Steps, Button, message, Spin, Dropdown, Tag,
 } from 'antd';
@@ -18,7 +18,7 @@ import ImageList from './components/ImageList';
 import ResultViewer from './components/ResultViewer';
 import ExportPanel from './components/ExportPanel';
 import ApiKeyPanel from './components/ApiKeyPanel';
-import { uploadImages, extractContent, downloadWord } from './services/api';
+import { uploadImages, extractContent, downloadWord, loadConfigFromDisk } from './services/api';
 import type { ImageInfo, ExtractResult, ApiConfig } from './services/api';
 
 const { Header, Content } = Layout;
@@ -67,6 +67,16 @@ export default function App() {
   const [uploadKey, setUploadKey] = useState(0);
   const pendingFilesRef = useRef<ImageItem[]>([]);
   const uploadTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // 启动时从磁盘恢复配置（桌面模式 localStorage 不持久）
+  useEffect(() => {
+    const stored = loadConfig();
+    if (!stored.api_key) {
+      loadConfigFromDisk().then((cfg) => {
+        if (cfg.api_key) { setApiConfig(cfg); saveConfig(cfg); }
+      }).catch(() => {});
+    }
+  }, []);
 
   // ─── 文件上传管理 ───
 

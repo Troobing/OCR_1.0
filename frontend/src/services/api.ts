@@ -67,6 +67,15 @@ export async function extractContent(
   return res.data;
 }
 
+export async function saveConfigToDisk(config: ApiConfig): Promise<void> {
+  await http.post('/config', config);
+}
+
+export async function loadConfigFromDisk(): Promise<ApiConfig> {
+  const res = await http.get('/config');
+  return res.data;
+}
+
 export async function downloadWord(
   imageIds: string[],
   contents: string[],

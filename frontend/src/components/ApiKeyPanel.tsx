@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { Modal, Form, Input, Select, Button, message } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
-import { type ApiConfig } from '../services/api';
+import { saveConfigToDisk, type ApiConfig } from '../services/api';
 
 interface Props {
   config: ApiConfig;
@@ -32,8 +32,9 @@ export default function ApiKeyPanel({ config, onSave }: Props) {
   };
 
   const handleSave = () => {
-    form.validateFields().then((values) => {
+    form.validateFields().then(async (values) => {
       onSave(values);
+      try { await saveConfigToDisk(values); } catch {}
       message.success('已保存');
       setOpen(false);
     });
