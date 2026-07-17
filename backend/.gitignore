@@ -12,6 +12,9 @@ __pycache__/
 .vscode/
 .idea/
 
+# 运行时生成（含加密的 API Key）
+config.json
+
 # 构建产物
 dist/
 build/
