@@ -13,31 +13,33 @@
 
 ## 快速开始
 
-### 桌面应用（推荐）
+### 1. 安装依赖
 
-下载 `OCR-Agent.exe`，双击运行，弹出独立窗口。
-
-> 开发者自行打包：装好依赖后双击 `build.ps1`
-
-### 开发模式（修改代码时使用）
-
-#### 1. 安装依赖
-
-```bash
-# 后端
+```powershell
+# 后端（需 Python 3.11+）
 cd backend
 python -m venv venv
-venv\Scripts\activate      # Windows PowerShell: venv\Scripts\Activate.ps1
+venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-# 前端
+# 前端（需 Node.js 18+）
 cd frontend
 npm install
 ```
 
-### 2. 配置 API
+### 2. 打包 exe（一次性）
 
-启动后在网页右上角「API 设置」中填写：
+```powershell
+.\build.ps1
+```
+
+完成后项目根目录会生成 `OCR-Agent.exe`，双击运行。
+
+> 之后改代码重新打包也只需再跑一次 `.\build.ps1`
+
+### 3. 配置 API
+
+启动后在窗口右上角「API 设置」中填写：
 
 | 字段 | 示例值 |
 |------|--------|
@@ -47,7 +49,15 @@ npm install
 
 > 模型必须支持图片识别（Vision）。配置保存在浏览器本地，刷新/重启不丢失。
 
-### 3. 启动
+### 4. 使用流程
+
+1. **上传** — 拖拽 / 点选 / Ctrl+V 粘贴图片（支持 JPG/PNG/WebP/BMP，单张 ≤ 20MB）
+2. **提取** — 点击「开始提取」，AI 提取图片中的文字和数学公式
+3. **导出** — 复制全文或下载为 Word 文档（公式以 Office 数学格式嵌入，可在 Word 中编辑）
+
+### 开发模式（不改代码不需要看）
+
+如果不想打包 exe，也可以直接跑前后端：
 
 ```powershell
 # 终端 1 — 后端
@@ -60,12 +70,6 @@ npx vite
 ```
 
 浏览器打开 `http://localhost:5173`。
-
-### 4. 使用流程
-
-1. **上传** — 拖拽 / 点选 / Ctrl+V 粘贴图片（支持 JPG/PNG/WebP/BMP，单张 ≤ 20MB）
-2. **提取** — 点击「开始提取」，AI 提取图片中的文字和数学公式
-3. **导出** — 复制全文或下载为 Word 文档（公式以 Office 数学格式嵌入，可在 Word 中编辑）
 
 ## 项目结构
 
