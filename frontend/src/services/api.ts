@@ -1,9 +1,9 @@
 /**
  * API 通信层 — 所有前后端交互的 HTTP 请求封装
  * Config: baseURL、超时时间、请求/响应格式
-（前端与后端网络请求）
- */
+ * （前端与后端网络请求）
  * Skill：Axios、FormData、Blob
+ */
 
 import axios from 'axios';
 
