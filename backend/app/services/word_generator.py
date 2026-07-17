@@ -277,15 +277,6 @@ def _latex_to_omml(latex: str) -> Optional[str]:
 
 # ─── 辅助：向 Document 添加内容块 ───
 
-def _add_text_paragraph(doc: Document, text: str) -> None:
-    for line in text.strip().split("\n"):
-        line = line.strip()
-        if not line:
-            continue
-        para = doc.add_paragraph(line)
-        para.paragraph_format.space_after = Pt(6)
-        para.paragraph_format.line_spacing = 1.15
-
 def _add_omml_paragraph(doc: Document, omml_xml: str, alignment: Optional[int] = None) -> None:
     para = doc.add_paragraph()
     if alignment is not None:

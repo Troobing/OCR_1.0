@@ -182,17 +182,9 @@ export default function App() {
 
     setDownloading(true);
     try {
-      const blob = await downloadWord(
+      const { path } = await downloadWord(
         okList.map((r) => r.image_id), okList.map((r) => r.content), merge,
       );
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = merge ? '提取结果.docx' : '提取结果.zip';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
       message.success('下载完成');
     } catch (e: any) {
       message.error(`下载失败：${getErrorMessage(e)}`);

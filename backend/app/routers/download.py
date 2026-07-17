@@ -1,24 +1,27 @@
 """
 下载路由 — POST /api/download
-接收提取内容 → 调用 word_generator 生成 .docx → StreamingResponse 返回文件下载
-Config: 下载文件名、单文件/zip 逻辑、Content-Disposition 头
-（生成并下载 Word 文件 API）
-Skill：StreamingResponse、Content-Disposition
+生成 .docx → 保存到 exe 同目录的"下载"文件夹 → 返回文件路径
 """
 
-import io
-from urllib.parse import quote
+import sys
+from pathlib import Path
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
 from app.models.schemas import DownloadRequest
 from app.services.word_generator import generate_word
 
 router = APIRouter(tags=["下载"])
 
+# 下载目录：exe 同目录或 backend/
+if getattr(sys, "frozen", False):
+    _download_dir = Path(sys.executable).parent / "下载"
+else:
+    _download_dir = Path(__file__).resolve().parent.parent.parent / "下载"
+_download_dir.mkdir(exist_ok=True)
+
 
 @router.post("/download")
 async def download_word(request: DownloadRequest):
-    """生成 Word 文档并触发浏览器下载"""
+    """生成 Word 文档，存到磁盘，返回文件路径"""
     if not request.image_ids or not request.contents:
         raise HTTPException(status_code=400, detail="请提供图片 ID 和提取内容")
     if len(request.image_ids) != len(request.contents):
@@ -27,18 +30,18 @@ async def download_word(request: DownloadRequest):
         raise HTTPException(status_code=400, detail="提取内容为空，请先进行提取操作")
 
     try:
-        file_bytes, filename, mime_type = generate_word(
-            contents=request.contents,
-            image_ids=request.image_ids,
-            merge=request.merge,
+        file_bytes, filename, _ = generate_word(
+            contents=request.contents, image_ids=request.image_ids, merge=request.merge,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"生成 Word 文档失败：{str(e)}")
 
-    return StreamingResponse(
-        io.BytesIO(file_bytes),
-        media_type=mime_type,
-        headers={
-            "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename, safe='')}"
-        },
-    )
+    filepath = _download_dir / filename
+    # 自动编号：如果文件已存在 → 提取结果 (1).docx → 提取结果 (2).docx ...
+    stem, ext = filepath.stem, filepath.suffix
+    counter = 1
+    while filepath.exists():
+        filepath = _download_dir / f"{stem} ({counter}){ext}"
+        counter += 1
+    filepath.write_bytes(file_bytes)
+    return {"path": str(filepath), "filename": filepath.name}

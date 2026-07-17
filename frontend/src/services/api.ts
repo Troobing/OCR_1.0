@@ -81,11 +81,7 @@ export async function downloadWord(
   imageIds: string[],
   contents: string[],
   merge: boolean
-): Promise<Blob> {
-  const res = await http.post(
-    '/download',
-    { image_ids: imageIds, contents, merge },
-    { responseType: 'blob' }
-  );
+): Promise<{ path: string; filename: string }> {
+  const res = await http.post('/download', { image_ids: imageIds, contents, merge });
   return res.data;
 }
