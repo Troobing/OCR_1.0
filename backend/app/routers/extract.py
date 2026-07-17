@@ -1,13 +1,13 @@
 """
 提取路由 — POST /api/extract
-接收图片 ID 列表 + LLM 配置 → 逐张调用 LLM API → 返回提取的文字和 LaTeX 公式
+接收图片 ID 列表 + LLM 配置 → 逐张调用 LLM API → 返回文字和 LaTeX 公式
 Config: 并发控制、错误处理策略
 （AI 提取 + 自我校验 API）
 """
 
 from fastapi import APIRouter, HTTPException
 from app.models.schemas import ExtractRequest, ExtractResponse, ExtractResult
-from app.services.llm_client import extract_from_image, verify_extraction
+from app.services.llm_client import extract_from_image
 from app.utils.file_utils import get_image_bytes
 
 router = APIRouter(tags=["提取"])
@@ -34,17 +34,6 @@ async def extract_content(request: ExtractRequest):
                 image_data=image_data, mime_type=mime_type,
                 api_key=api_key, base_url=base_url, model=model,
             )
-
-            # 自我校验：把首轮结果发回 AI 对照原图修正
-            try:
-                verified, _ = await verify_extraction(
-                    image_data=image_data, mime_type=mime_type,
-                    extracted_text=content,
-                    api_key=api_key, base_url=base_url, model=model,
-                )
-                content = verified
-            except Exception:
-                pass
 
             results.append(ExtractResult(
                 image_id=image_id, filename=image_id,
