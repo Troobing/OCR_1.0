@@ -9,7 +9,7 @@ export default defineConfig({
     // 这样前端代码写 /api/upload，开发时 Vite 自动转发，不需要处理跨域
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:5073',
         changeOrigin: true,
       },
     },

@@ -62,7 +62,7 @@ npm install
 ```powershell
 # 终端 1 — 后端
 cd ocr-agent\backend
-venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 5073
 
 # 终端 2 — 前端
 cd ocr-agent\frontend
