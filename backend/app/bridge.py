@@ -9,12 +9,11 @@ from pathlib import Path
 from app.utils.file_utils import validate_image, save_uploaded_image, get_image_bytes
 from app.services.llm_client import extract_from_image
 from app.services.word_generator import generate_word
-from app.routers.config import _read_config, CONFIG_FILE
+from app.routers.config import _read_config, CONFIG_FILE, _encrypt
 import json
 
 
 class Bridge:
-    """所有需要暴露给前端的方法都写在这里，pywebview 会自动挂到 window.pywebview.api"""
 
     def upload_images(self, files: list[dict]) -> list[dict]:
         """files: [{"name":str, "data":base64_str, "size":int, "type":str}, ...]"""
@@ -72,9 +71,9 @@ class Bridge:
         return {"path": str(fp), "filename": fp.name}
 
     def save_config(self, base_url: str, api_key: str, model: str):
-        CONFIG_FILE.write_text(json.dumps(
-            {"base_url": base_url, "api_key": api_key, "model": model},
-            ensure_ascii=False, indent=2), encoding="utf-8")
+        CONFIG_FILE.write_text(json.dumps({
+            "base_url": base_url, "api_key": _encrypt(api_key), "model": model,
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def load_config(self) -> dict:
         return _read_config()
