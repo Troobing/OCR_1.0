@@ -74,9 +74,12 @@ export default function App() {
   useEffect(() => {
     const stored = loadConfig();
     if (!stored.api_key) {
-      loadConfigFromDisk().then((cfg) => {
-        if (cfg.api_key) { setApiConfig(cfg); saveConfig(cfg); }
-      }).catch(() => {});
+      // 延迟加载，等 pywebview 注入桥接对象
+      setTimeout(() => {
+        loadConfigFromDisk().then((cfg) => {
+          if (cfg.api_key) { setApiConfig(cfg); saveConfig(cfg); }
+        }).catch(() => {});
+      }, 500);
     }
   }, []);
 
