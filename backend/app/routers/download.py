@@ -11,11 +11,11 @@ from app.services.word_generator import generate_word
 
 router = APIRouter(tags=["下载"])
 
-# 下载目录：exe 同目录或 backend/
+# 下载目录：统一为 ocr-agent/下载
 if getattr(sys, "frozen", False):
     _download_dir = Path(sys.executable).parent / "下载"
 else:
-    _download_dir = Path(__file__).resolve().parent.parent.parent / "下载"
+    _download_dir = Path(__file__).resolve().parent.parent.parent.parent / "下载"
 _download_dir.mkdir(exist_ok=True)
 
 
