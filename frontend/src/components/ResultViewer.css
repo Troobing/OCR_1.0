@@ -1,0 +1,33 @@
+/** 结果展示区局部样式 — KaTeX 公式混排对齐、保留换行与空格 */
+/* KaTeX 公式与文字混排时，微调对齐 */
+.result-viewer .katex {
+  font-size: 1.1em;
+}
+
+/* 保留文本中的换行与连续空格，与 ResultViewer 内部 <br/> 协同 */
+.result-viewer {
+  white-space: pre-wrap;
+}
+
+/* Markdown 表格样式（与 word_generator 渲染的 Word 表格风格对齐） */
+.result-viewer table {
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.result-viewer th,
+.result-viewer td {
+  border: 1px solid #d9d9d9;
+  padding: 6px 12px;
+  text-align: left;
+}
+
+.result-viewer th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.result-viewer tbody tr:nth-child(even) {
+  background: #fafafa;
+}

@@ -1,9 +1,11 @@
 /**
  * 上传区域 — 拖拽/点击/Ctrl+V 粘贴图片，校验格式和大小后传给父组件
- * Config: 允许的文件格式、大小上限、粘贴事件
+ * 负责：文件选择、格式校验、粘贴事件监听
+ * Config: 允许的文件格式、大小上限
  * （页面左上角拖拽上传框）
  * Skill：Ant Design Dragger、Clipboard API
  */
+
 
 import { useCallback, useEffect } from 'react';
 import { Upload, message } from 'antd';

@@ -1,8 +1,0 @@
-/* KaTeX 公式与文字混排时，微调对齐 */
-.result-viewer .katex {
-  font-size: 1.1em;
-}
-
-.result-viewer {
-  white-space: pre-wrap;
-}

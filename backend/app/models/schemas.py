@@ -1,7 +1,7 @@
 """
 Pydantic 数据模型 — 所有接口的请求体 & 响应体结构
 负责：定义前后端通信的数据格式
-Config: 上传返回字段、提取请求参数、下载请求格式
+Config: 上传返回字段、提取请求参数、下载请求格式、配置更新字段
 （前端与后端通信的数据格式定义）
 Skill：Pydantic BaseModel
 """
@@ -25,11 +25,8 @@ class UploadResponse(BaseModel):
 # ─── 提取接口 /api/extract ───
 
 class ExtractRequest(BaseModel):
-    """提取请求：指定哪些图片 + LLM 配置"""
+    """提取请求：仅传图片 ID。API Key 由后端从 config.json 读取，前端不接触明文 key。"""
     image_ids: list[str]
-    api_key: str
-    base_url: Optional[str] = None
-    model: Optional[str] = None
 
 class ExtractResult(BaseModel):
     """单张图片提取结果"""
@@ -50,7 +47,10 @@ class DownloadRequest(BaseModel):
     contents: list[str]
     merge: bool = True
 
-# ─── 通用 ───
+# ─── 配置接口 /api/config ───
 
-class ErrorResponse(BaseModel):
-    detail: str
+class ConfigUpdateRequest(BaseModel):
+    """配置增量更新请求。所有字段可选，未传字段保留原值。"""
+    base_url: Optional[str] = None
+    api_key: Optional[str] = None
+    model: Optional[str] = None

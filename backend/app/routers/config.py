@@ -1,61 +1,31 @@
 """
-配置持久化 — API Key 加密存到 config.json，用本机特征码做密钥
-Config: 加密密钥、存储路径、默认值
-（桌面模式下保存和读取 API 配置）
-Skill：XOR 加密、hashlib、JSON
+配置路由 — GET/POST /api/config
+负责：把 HTTP 请求转发到 config_service
+Config: 无（配置逻辑全部在 services/config_service.py）
+（网页端的 API 配置读写接口）
+Skill：FastAPI APIRouter
 """
 
-import hashlib
-import base64
-import json
-import platform
-import sys
-from pathlib import Path
 from fastapi import APIRouter
 
+from app.models.schemas import ConfigUpdateRequest
+from app.services import config_service
+
 router = APIRouter(tags=["配置"])
-
-if getattr(sys, "frozen", False):
-    CONFIG_FILE = Path(sys.executable).parent / "config.json"
-else:
-    CONFIG_FILE = Path(__file__).resolve().parent.parent.parent / "config.json"
-
-DEFAULTS = {"base_url": "https://api.uniapi.io/v1", "api_key": "", "model": "gpt-4o"}
-
-# 用本机特征派生加密密钥——换台机器拷走 config.json 也解不开
-_KEY = hashlib.sha256(f"{platform.node()}{platform.machine()}".encode()).digest()
-
-
-def _encrypt(text: str) -> str:
-    if not text:
-        return ""
-    data = text.encode()
-    return base64.b64encode(bytes(a ^ _KEY[i % len(_KEY)] for i, a in enumerate(data))).decode()
-
-
-def _decrypt(encoded: str) -> str:
-    if not encoded:
-        return ""
-    data = base64.b64decode(encoded)
-    return bytes(a ^ _KEY[i % len(_KEY)] for i, a in enumerate(data)).decode()
-
-
-def _read_config() -> dict:
-    try:
-        cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
-        cfg["api_key"] = _decrypt(cfg.get("api_key", ""))
-        return cfg
-    except Exception:
-        return dict(DEFAULTS)
 
 
 @router.get("/config")
 async def get_config():
-    return _read_config()
+    """返回配置（api_key 为掩码，前端永不接触明文 key）"""
+    return config_service.read_config_masked()
 
 
 @router.post("/config")
-async def save_config(data: dict):
-    data["api_key"] = _encrypt(data.get("api_key", ""))
-    CONFIG_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+async def save_config(data: ConfigUpdateRequest):
+    """增量保存配置。api_key 为空时保留原值，避免掩码误覆盖。"""
+    config_service.save_config(
+        base_url=data.base_url,
+        api_key=data.api_key,
+        model=data.model,
+    )
     return {"status": "ok"}

@@ -4,9 +4,10 @@
  * （页面主体：左栏传图+列表，右栏提取结果）
  * Skill：React 状态提升、useRef 防抖、Ant Design Layout
  */
- 
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+
+
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Layout, Row, Col, Steps, Button, message, Spin, Dropdown, Tag,
 } from 'antd';
@@ -20,7 +21,11 @@ import ImageList from './components/ImageList';
 import ResultViewer from './components/ResultViewer';
 import ExportPanel from './components/ExportPanel';
 import ApiKeyPanel from './components/ApiKeyPanel';
-import { uploadImages, extractContent, downloadWord, loadConfigFromDisk } from './services/api';
+import {
+  uploadImages, extractContent, downloadWord, loadConfigFromDisk,
+  deleteImage, waitForBridge,
+} from './services/api';
+import { contentToPlainText } from './services/plainText';
 import type { ImageInfo, ExtractResult, ApiConfig } from './services/api';
 
 const { Header, Content } = Layout;
@@ -74,12 +79,21 @@ export default function App() {
   useEffect(() => {
     const stored = loadConfig();
     if (!stored.api_key) {
-      // 延迟加载，等 pywebview 注入桥接对象
-      setTimeout(() => {
+      waitForBridge(3000).then(() => {
         loadConfigFromDisk().then((cfg) => {
-          if (cfg.api_key) { setApiConfig(cfg); saveConfig(cfg); }
-        }).catch(() => {});
-      }, 500);
+          // 后端返回掩码 api_key，前端只用于显示 has_key 状态
+          if (cfg.has_key) {
+            const merged: ApiConfig = {
+              base_url: cfg.base_url,
+              api_key: cfg.api_key,  // 掩码
+              model: cfg.model,
+              has_key: cfg.has_key,
+            };
+            setApiConfig(merged);
+            saveConfig(merged);
+          }
+        }).catch(() => { /* ignore */ });
+      });
     }
   }, []);
 
@@ -116,19 +130,31 @@ export default function App() {
   }, []);
 
   const handleRemoveImage = useCallback((id: string) => {
+    // 找到 serverInfo.id 后通知后端清理
+    let serverId: string | undefined;
     setImages((prev) => {
       const removed = prev.find((img) => img.id === id);
-      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      if (removed) {
+        URL.revokeObjectURL(removed.previewUrl);
+        serverId = removed.serverInfo?.id;
+      }
       return prev.filter((img) => img.id !== id);
     });
     setResults([]);
     setCurrentStep(0);
     pendingFilesRef.current = pendingFilesRef.current.filter((img) => img.id !== id);
+    if (serverId) {
+      deleteImage(serverId).catch(() => { /* 忽略后端清理失败 */ });
+    }
   }, []);
 
   const handleClearAll = useCallback(() => {
+    const serverIds: string[] = [];
     setImages((prev) => {
-      prev.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      prev.forEach((img) => {
+        URL.revokeObjectURL(img.previewUrl);
+        if (img.serverInfo?.id) serverIds.push(img.serverInfo.id);
+      });
       return [];
     });
     setResults([]);
@@ -136,24 +162,21 @@ export default function App() {
     pendingFilesRef.current = [];
     if (uploadTimerRef.current) clearTimeout(uploadTimerRef.current);
     setUploadKey((k) => k + 1);
+    // 批量清理后端
+    serverIds.forEach((sid) => deleteImage(sid).catch(() => { /* ignore */ }));
   }, []);
 
   // ─── AI 提取 ───
 
   const handleExtract = useCallback(async () => {
-    if (!apiConfig.api_key) {
-      message.warning('请先点击右上角「API 设置」配置 API Key');
-      return;
-    }
+    // 前端不持有真 key，无法本地校验；直接发请求，后端无 key 时返回 400
     const uploaded = images.filter((img) => img.serverInfo);
     if (uploaded.length === 0) return;
 
     setExtracting(true);
     setCurrentStep(1);
     try {
-      const res = await extractContent(
-        uploaded.map((img) => img.serverInfo!.id), apiConfig
-      );
+      const res = await extractContent(uploaded.map((img) => img.serverInfo!.id));
       const ok = res.results.filter((r) => r.status === 'success').length;
       const fail = res.results.length - ok;
       if (fail > 0) message.warning(`${ok} 张成功，${fail} 张失败`);
@@ -166,12 +189,17 @@ export default function App() {
       setActiveTab('0');
       setCurrentStep(2);
     } catch (e: any) {
-      message.error(`提取失败：${getErrorMessage(e)}`);
+      const msg = getErrorMessage(e);
+      message.error(`提取失败：${msg}`);
+      // 后端返回 400 "未配置 API Key" 时，提示用户去设置
+      if (msg.includes('API Key')) {
+        message.warning('请点击右上角「API 设置」配置 API Key');
+      }
       setCurrentStep(0);
     } finally {
       setExtracting(false);
     }
-  }, [images, apiConfig]);
+  }, [images]);
 
   // ─── API 配置 & 下载 ───
 
@@ -202,6 +230,10 @@ export default function App() {
   const allUploaded = images.length > 0 && images.every((img) => img.serverInfo);
   const hasResults = results.length > 0;
   const currentResult = hasResults ? results[Number(activeTab)] : null;
+  const currentPlainText = useMemo(
+    () => (currentResult?.content ? contentToPlainText(currentResult.content) : ''),
+    [currentResult?.content],
+  );
 
   // ─── UI 渲染 ───
 
@@ -239,7 +271,7 @@ export default function App() {
                 <Button type="primary" size="large" onClick={handleExtract}
                   loading={extracting} disabled={!allUploaded || extracting}
                   icon={<ExperimentOutlined />}>
-                  {extracting ? '提取ing' : '开始提取'}
+                  {extracting ? '提取中…' : '开始提取'}
                 </Button>
               </div>
             )}
@@ -299,7 +331,12 @@ export default function App() {
                 {currentResult?.status === 'success' ? (
                   <>
                     <ResultViewer content={currentResult.content} />
-                    <ExportPanel rawText={currentResult.content} loading={downloading} onDownload={handleDownload} />
+                    <ExportPanel
+                      rawText={currentResult.content}
+                      plainText={currentPlainText}
+                      loading={downloading}
+                      onDownload={handleDownload}
+                    />
                   </>
                 ) : (
                   <div style={{ color: '#ff4d4f', padding: 16 }}>

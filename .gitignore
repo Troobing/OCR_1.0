@@ -1,3 +1,29 @@
+# 构建产物
 OCR-Agent.exe
+dist/
+build/
+*.spec
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Node
+node_modules/
+
+# 本地配置与产出
 config.json
 下载/
+
+# 环境与日志
+.env
+.env.*
+*.log
+
+# 工具与系统
+.zcode/
+.DS_Store
+Thumbs.db

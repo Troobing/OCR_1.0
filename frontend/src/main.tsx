@@ -5,6 +5,7 @@
  * Skill：Ant Design ConfigProvider
  */
 
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ConfigProvider } from 'antd'

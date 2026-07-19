@@ -6,11 +6,11 @@
 
 | 层 | 技术 |
 |---|------|
-| 前端 | React 18 + TypeScript + Vite + Ant Design 5 + KaTeX |
+| 前端 | React 19 + TypeScript + Vite + Ant Design 6 + KaTeX |
 | 后端 | Python 3.11+ + FastAPI + Uvicorn |
 | 桌面 | pywebview（原生窗口 + JS Bridge，不走 HTTP API） |
 | AI | OpenAI 兼容 API（GPT-4o / Claude / Gemini 等） |
-| Word | python-docx + latex2mathml + XSLT（OMML 公式） |
+| Word | python-docx + latex2mathml + XSLT + Python 预处理器（OMML 公式，完整支持矩阵/方程组/对齐） |
 
 ## 快速开始
 
@@ -48,7 +48,7 @@ npm install
 | API Key | `sk-xxxx` |
 | 模型 | `gpt-4o` |
 
-> 模型必须支持图片识别（Vision）。exe 端加密存到磁盘 `config.json`，网页端存浏览器 localStorage。两端的配置共用一份加密文件，不会丢失。
+> 模型必须支持图片识别（Vision）。API Key 在桌面端用 Windows DPAPI 加密存到 `config.json`（绑定当前用户，换机/换用户解不开）；网页端配置只存浏览器 localStorage，不写入后端磁盘。两端配置相互独立，不共用。
 
 ### 4. 使用流程
 
@@ -64,7 +64,8 @@ npm install
 | 通信方式 | JS Bridge（不走 HTTP） | HTTP（axios → FastAPI） |
 | 端口 | 随机端口（自动找空闲） | 5073（自动切换） |
 | 窗口 | 原生窗口 | 浏览器标签页 |
-| 配置存储 | `config.json`（加密） | 浏览器 localStorage |
+| 配置存储 | `config.json`（DPAPI 加密，绑定用户） | 浏览器 localStorage |
+| API Key | 后端自管，前端只拿到掩码 | 前端 localStorage 持有 |
 | 开发者工具 | 无 | F12 可用 |
 
 ### 开发模式
@@ -100,15 +101,19 @@ ocr-agent/
 │       ├── models/schemas.py         # 前后端通信的数据格式
 │       ├── routers/
 │       │   ├── upload.py             # 图片上传
+│       │   ├── image.py              # 图片删除（清理后端内存）
 │       │   ├── extract.py            # AI 提取
 │       │   ├── download.py           # Word 下载（网页端）
-│       │   └── config.py             # 配置加密读写
+│       │   └── config.py             # 配置读写（薄路由层）
 │       ├── services/
-│       │   ├── llm_client.py         # LLM API 调用
+│       │   ├── llm_client.py         # LLM API 调用（AsyncOpenAI + 重试）
 │       │   ├── prompt.py             # Prompt 模板
-│       │   └── word_generator.py     # Word 生成（LaTeX → OMML）
+│       │   ├── word_generator.py     # Word 生成（环境预处理 + LaTeX → OMML）
+│       │   └── config_service.py     # 配置持久化 + DPAPI 加密
 │       └── utils/
-│           └── file_utils.py         # 图片校验、内存存储
+│           ├── constants.py          # 跨模块共享常量（并发上限等）
+│           ├── file_utils.py         # 图片校验、LRU 内存存储、下载目录工具
+│           └── logger.py             # 统一日志
 │
 └── frontend/                         # React + TypeScript 前端
     ├── vite.config.ts                # Vite 构建 + API 代理
@@ -116,14 +121,17 @@ ocr-agent/
     └── src/
         ├── main.tsx                  # 入口 + 粉色主题
         ├── App.tsx                   # 主页面
-        ├── App.css
         ├── services/
-        │   └── api.ts                # HTTP 请求 + 桥接双模式
+        │   ├── api.ts                # HTTP 请求 + 桥接双模式
+        │   ├── plainText.ts          # 公式转纯文本（剪贴板复制用）
+        │   ├── formula.ts            # 公式两段式抽取（块级/行内）
+        │   └── markdownTable.ts      # Markdown 表格抽取与渲染
         └── components/
-            ├── UploadZone.tsx         # 上传区域
+            ├── UploadZone.tsx        # 上传区域
             ├── ImageList.tsx          # 图片列表
             ├── ApiKeyPanel.tsx        # API 设置面板
             ├── ResultViewer.tsx       # 结果渲染（KaTeX）
+            ├── ResultViewer.css       # ResultViewer 局部样式
             └── ExportPanel.tsx        # 导出按钮
 ```
 
@@ -136,20 +144,22 @@ ocr-agent/
     ↓
 后端：图片 → base64 → 拼 Prompt → 调用 LLM API
     ↓
-返回文字 + LaTeX 公式（$...$ 行内 / $$...$$ 块级）
+返回文字 + LaTeX 公式（$...$ 行内 / $$...$$ 块级）+ Markdown 表格
     ↓
-前端用 KaTeX 渲染展示
+前端用 KaTeX 渲染公式、HTML <table> 渲染表格
     ↓
-下载 Word → LaTeX → MathML → XSLT → OMML → 保存到磁盘
+下载 Word → LaTeX →（矩阵/方程组/对齐环境走 Python 预处理，其他走 MathML → XSLT）→ OMML → 保存到磁盘
 ```
 
 ## API 接口（开发模式）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/api/health` | 健康检查 |
 | POST | `/api/upload` | 上传图片（multipart/form-data, field: files） |
-| POST | `/api/extract` | AI 提取文字和公式 |
+| DELETE | `/api/images/{image_id}` | 删除单张图片（清理后端内存） |
+| POST | `/api/extract` | AI 提取文字和公式（API Key 由后端自管） |
 | POST | `/api/download` | 生成并下载 Word 文档 |
+| GET | `/api/config` | 读取配置（api_key 为掩码） |
+| POST | `/api/config` | 增量保存配置（api_key 为空时保留原值） |
 
 启动后端后访问 `http://localhost:5073/docs` 查看 Swagger 交互式文档。

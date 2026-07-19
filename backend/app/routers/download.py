@@ -1,25 +1,18 @@
 """
 下载路由 — POST /api/download
 负责：生成 Word 文档并保存到磁盘
-Config: 下载目录、文件名自动编号规则
+Config: 无（下载目录由 file_utils.get_download_dir 提供）
 （网页端的 Word 下载功能）
-Skill：文件写入、自动编号避重名
+Skill：文件写入、unique_path 自动编号避重名
 """
 
-import sys
-from pathlib import Path
 from fastapi import APIRouter, HTTPException
+
 from app.models.schemas import DownloadRequest
 from app.services.word_generator import generate_word
+from app.utils.file_utils import get_download_dir, unique_path
 
 router = APIRouter(tags=["下载"])
-
-# 下载目录：统一为 ocr-agent/下载
-if getattr(sys, "frozen", False):
-    _download_dir = Path(sys.executable).parent / "下载"
-else:
-    _download_dir = Path(__file__).resolve().parent.parent.parent.parent / "下载"
-_download_dir.mkdir(exist_ok=True)
 
 
 @router.post("/download")
@@ -39,12 +32,6 @@ async def download_word(request: DownloadRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"生成 Word 文档失败：{str(e)}")
 
-    filepath = _download_dir / filename
-    # 自动编号：如果文件已存在 → 提取结果 (1).docx → 提取结果 (2).docx ...
-    stem, ext = filepath.stem, filepath.suffix
-    counter = 1
-    while filepath.exists():
-        filepath = _download_dir / f"{stem} ({counter}){ext}"
-        counter += 1
+    filepath = unique_path(get_download_dir() / filename)
     filepath.write_bytes(file_bytes)
     return {"path": str(filepath), "filename": filepath.name}
