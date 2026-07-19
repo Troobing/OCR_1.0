@@ -60,9 +60,9 @@ npm install
 如果不想打包 exe，也可以直接跑前后端：
 
 ```powershell
-# 终端 1 — 后端
+# 终端 1 — 后端（自动找空闲端口，5073 被占则用 5074、5075...）
 cd ocr-agent\backend
-venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 5073
+venv\Scripts\python.exe run_dev.py
 
 # 终端 2 — 前端
 cd ocr-agent\frontend
