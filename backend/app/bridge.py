@@ -1,6 +1,9 @@
 """
-JS Bridge — 暴露给 pywebview 前端的 Python 函数
-exe 模式下前端不调 HTTP，通过 window.pywebview.api.xxx() 直接调这些函数
+JS Bridge — exe 模式下前端直接调 Python 函数的桥接层
+负责：上传/提取/下载/配置的桥接实现
+Config: 下载目录路径
+（exe 端的所有后端功能入口）
+Skill：pywebview JS API、asyncio
 """
 
 import base64

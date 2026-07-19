@@ -1,6 +1,9 @@
 """
 下载路由 — POST /api/download
-生成 .docx → 保存到 exe 同目录的"下载"文件夹 → 返回文件路径
+负责：生成 Word 文档并保存到磁盘
+Config: 下载目录、文件名自动编号规则
+（网页端的 Word 下载功能）
+Skill：文件写入、自动编号避重名
 """
 
 import sys

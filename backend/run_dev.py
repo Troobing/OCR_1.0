@@ -1,6 +1,9 @@
 """
-开发模式后端启动脚本 — 自动找空闲端口，不用手动改配置
-用法：venv/Scripts/python.exe run_dev.py
+开发模式后端启动脚本 — 自动找空闲端口启动 uvicorn
+负责：端口扫描、启动 FastAPI 服务
+Config: 起始端口号、扫描范围
+（开发时在终端运行的后端启动入口）
+Skill：socket 端口检测、uvicorn
 """
 
 import socket

@@ -1,5 +1,9 @@
 """
-桌面应用入口 — 静态文件用随机端口 HTTP 服务，API 走 JS Bridge
+桌面应用入口 — 随机端口 HTTP 提供静态文件，API 走 JS Bridge
+负责：启动 exe 窗口、暴露桥接 API、加载前端页面
+Config: MIME 类型注册、静态文件目录路径
+（双击 exe 时最先执行的文件）
+Skill：pywebview 窗口、HTTPServer、随机端口分配
 """
 
 import sys

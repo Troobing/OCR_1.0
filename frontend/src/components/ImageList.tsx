@@ -2,6 +2,7 @@
  * 图片列表 — 已添加图片的紧凑列表：回形针图标 + 文件名 + 大小 + 删除按钮
  * Config: 列表样式、行高、删除确认文案
  * （上传框下方的图片清单）
+ * Skill：React 列表渲染、Popconfirm
  */
 
 import { Button, Popconfirm } from 'antd';
