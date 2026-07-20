@@ -59,7 +59,7 @@ async def extract_from_image(
                 model=model,
                 messages=messages,
                 temperature=0.3,
-                max_tokens=32768,
+                max_tokens=16384,
                 # frequency_penalty=0：避免抑制公式中重复符号（a_1+a_2+...+a_n）
                 frequency_penalty=0,
             )

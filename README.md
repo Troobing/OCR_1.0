@@ -40,15 +40,15 @@ npm install
 
 ### 3. 配置 API
 
-启动后在窗口右上角「API 设置」中填写：
+在 `backend/.env` 文件中设置：
 
 | 字段 | 示例值 |
 |------|--------|
-| API 地址 | `https://api.uniapi.io/v1` |
-| API Key | `sk-xxxx` |
-| 模型 | `gpt-4o` |
+| `LLM_BASE_URL` | `https://api.uniapi.io/v1` |
+| `LLM_API_KEY` | `sk-xxxx` |
+| `LLM_MODEL` | `gpt-4o` |
 
-> 模型必须支持图片识别（Vision）。API Key 在桌面端用 Windows DPAPI 加密存到 `config.json`（绑定当前用户，换机/换用户解不开）；网页端配置只存浏览器 localStorage，不写入后端磁盘。两端配置相互独立，不共用。
+> 模型必须支持图片识别（Vision）。`.env` 已加入 `.gitignore`，不会泄露到 GitHub。API Key 只存在于后端内存，前端无法接触明文。
 
 ### 4. 使用流程
 
@@ -64,8 +64,8 @@ npm install
 | 通信方式 | JS Bridge（不走 HTTP） | HTTP（axios → FastAPI） |
 | 端口 | 随机端口（自动找空闲） | 5073（自动切换） |
 | 窗口 | 原生窗口 | 浏览器标签页 |
-| 配置存储 | `config.json`（DPAPI 加密，绑定用户） | 浏览器 localStorage |
-| API Key | 后端自管，前端只拿到掩码 | 前端 localStorage 持有 |
+| 配置存储 | `.env` 文件 | `.env` 文件 |
+| API Key | 后端从 .env 读取，前端不接触 | 同左 |
 | 开发者工具 | 无 | F12 可用 |
 
 ### 开发模式
@@ -94,22 +94,23 @@ ocr-agent/
 │   ├── desktop.py                    # exe 桌面应用入口
 │   ├── run_dev.py                    # 开发模式后端启动脚本
 │   ├── app.ico                       # exe 图标
+│   ├── .env                          # API 配置（LLM Key/地址/模型）
+│   ├── .env.example                  # 配置模板
 │   ├── requirements.txt
 │   └── app/
 │       ├── main.py                   # FastAPI 入口（开发模式 HTTP）
 │       ├── bridge.py                 # JS Bridge（exe 模式 API）
+│       ├── settings.py               # .env 配置读取
 │       ├── models/schemas.py         # 前后端通信的数据格式
 │       ├── routers/
 │       │   ├── upload.py             # 图片上传
 │       │   ├── image.py              # 图片删除（清理后端内存）
 │       │   ├── extract.py            # AI 提取
-│       │   ├── download.py           # Word 下载（网页端）
-│       │   └── config.py             # 配置读写（薄路由层）
+│       │   └── download.py           # Word 下载
 │       ├── services/
 │       │   ├── llm_client.py         # LLM API 调用（AsyncOpenAI + 重试）
 │       │   ├── prompt.py             # Prompt 模板
-│       │   ├── word_generator.py     # Word 生成（环境预处理 + LaTeX → OMML）
-│       │   └── config_service.py     # 配置持久化 + DPAPI 加密
+│       │   └── word_generator.py     # Word 生成（LaTeX → OMML）
 │       └── utils/
 │           ├── constants.py          # 跨模块共享常量（并发上限等）
 │           ├── file_utils.py         # 图片校验、LRU 内存存储、下载目录工具
@@ -159,7 +160,5 @@ ocr-agent/
 | DELETE | `/api/images/{image_id}` | 删除单张图片（清理后端内存） |
 | POST | `/api/extract` | AI 提取文字和公式（API Key 由后端自管） |
 | POST | `/api/download` | 生成并下载 Word 文档 |
-| GET | `/api/config` | 读取配置（api_key 为掩码） |
-| POST | `/api/config` | 增量保存配置（api_key 为空时保留原值） |
 
 启动后端后访问 `http://localhost:5073/docs` 查看 Swagger 交互式文档。

@@ -7,7 +7,7 @@
 
 
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import {
   Layout, Row, Col, Steps, Button, message, Spin, Dropdown, Tag,
 } from 'antd';
@@ -20,39 +20,15 @@ import UploadZone from './components/UploadZone';
 import ImageList from './components/ImageList';
 import ResultViewer from './components/ResultViewer';
 import ExportPanel from './components/ExportPanel';
-import ApiKeyPanel from './components/ApiKeyPanel';
-import {
-  uploadImages, extractContent, downloadWord, loadConfigFromDisk,
-  deleteImage, waitForBridge,
-} from './services/api';
+import { uploadImages, extractContent, downloadWord, deleteImage } from './services/api';
 import { contentToPlainText } from './services/plainText';
-import type { ImageInfo, ExtractResult, ApiConfig } from './services/api';
+import type { ImageInfo, ExtractResult } from './services/api';
 
 const { Header, Content } = Layout;
-
-// ─── 工具函数 ───
 
 function getErrorMessage(e: any): string {
   return e?.response?.data?.detail || e?.message || '未知错误';
 }
-
-// ─── localStorage 持久化 ───
-
-const STORAGE_KEY = 'ocr_agent_config';
-
-function loadConfig(): ApiConfig {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch { /* ignore */ }
-  return { base_url: 'https://api.uniapi.io/v1', api_key: '', model: 'gpt-4o' };
-}
-
-function saveConfig(config: ApiConfig) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-}
-
-// ─── 类型 ───
 
 interface ImageItem {
   id: string;
@@ -61,11 +37,8 @@ interface ImageItem {
   serverInfo?: ImageInfo;
 }
 
-// ─── App 组件 ───
-
 export default function App() {
   const [images, setImages] = useState<ImageItem[]>([]);
-  const [apiConfig, setApiConfig] = useState<ApiConfig>(loadConfig);
   const [currentStep, setCurrentStep] = useState(0);
   const [extracting, setExtracting] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -74,28 +47,6 @@ export default function App() {
   const [uploadKey, setUploadKey] = useState(0);
   const pendingFilesRef = useRef<ImageItem[]>([]);
   const uploadTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  // 启动时从磁盘恢复配置（桌面模式 localStorage 不持久）
-  useEffect(() => {
-    const stored = loadConfig();
-    if (!stored.api_key) {
-      waitForBridge(3000).then(() => {
-        loadConfigFromDisk().then((cfg) => {
-          // 后端返回掩码 api_key，前端只用于显示 has_key 状态
-          if (cfg.has_key) {
-            const merged: ApiConfig = {
-              base_url: cfg.base_url,
-              api_key: cfg.api_key,  // 掩码
-              model: cfg.model,
-              has_key: cfg.has_key,
-            };
-            setApiConfig(merged);
-            saveConfig(merged);
-          }
-        }).catch(() => { /* ignore */ });
-      });
-    }
-  }, []);
 
   // ─── 文件上传管理 ───
 
@@ -201,12 +152,7 @@ export default function App() {
     }
   }, [images]);
 
-  // ─── API 配置 & 下载 ───
-
-  const handleSaveConfig = useCallback((config: ApiConfig) => {
-    setApiConfig(config);
-    saveConfig(config);
-  }, []);
+  // ─── 下载 ───
 
   const handleDownload = useCallback(async (merge: boolean) => {
     const okList = results.filter((r) => r.status === 'success');
@@ -248,7 +194,6 @@ export default function App() {
           <ExperimentOutlined style={{ marginRight: 8 }} />
           OCR Agent
         </div>
-        <ApiKeyPanel config={apiConfig} onSave={handleSaveConfig} />
       </Header>
 
       <Content style={{ padding: '24px 48px', maxWidth: 1300, margin: '0 auto', width: '100%' }}>
