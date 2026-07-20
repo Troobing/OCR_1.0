@@ -48,7 +48,7 @@ npm install
 | `LLM_API_KEY` | `sk-xxxx` |
 | `LLM_MODEL` | `gpt-4o` |
 
-> 模型必须支持图片识别（Vision）。`.env` 已加入 `.gitignore`，不会泄露到 GitHub。API Key 只存在于后端内存，前端无法接触明文。
+> 模型必须支持图片识别（Vision）。
 
 ### 4. 使用流程
 
