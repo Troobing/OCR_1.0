@@ -1,7 +1,6 @@
 """
 JS Bridge — exe 模式下前端直接调 Python 函数的桥接层
 负责：上传、提取、下载、删除图片的桥接实现
-Config: 无（下载目录由 file_utils 提供、并发上限由 constants 提供）
 （exe 端的所有后端功能入口 — 替代 HTTP 路由）
 Skill：pywebview JS API、asyncio.run + gather 并发
 """

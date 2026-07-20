@@ -1,7 +1,9 @@
 """
 应用配置 — 从 .env 文件读取 LLM API 设置
 负责：.env 解析、默认值回退
+Config: 文件路径、默认值
 （所有端共用）
+Skill：文件解析
 """
 
 import sys

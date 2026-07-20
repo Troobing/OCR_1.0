@@ -2,6 +2,7 @@
  * API 通信层 — HTTP（开发模式）或 pywebview 桥接（exe 模式）
  * 负责：封装上传/提取/下载/删除的所有后台通信
  * Config: baseURL、超时时间
+ * （前端与后端的唯一通信入口）
  * Skill：Axios、FormData、pywebview JS Bridge
  */
 

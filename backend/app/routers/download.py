@@ -1,7 +1,6 @@
 """
 下载路由 — POST /api/download
 负责：生成 Word 文档并保存到磁盘
-Config: 无（下载目录由 file_utils.get_download_dir 提供）
 （网页端的 Word 下载功能）
 Skill：文件写入、unique_path 自动编号避重名
 """

@@ -1,7 +1,6 @@
 /**
  * Markdown 表格抽取 — ResultViewer 专用
  * 负责：把 |...| 形式的 Markdown 表格抽出为占位符，避免 HTML 转义破坏结构
- * Config: 无
  * （提取结果中表格渲染的前置处理）
  * Skill：正则、占位符模式
  */

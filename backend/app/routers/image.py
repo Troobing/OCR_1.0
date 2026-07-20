@@ -1,7 +1,6 @@
 """
 图片删除路由 — DELETE /api/images/{image_id}
 负责：前端删图时同步清理后端内存存储
-Config: 无
 （网页端的图片删除功能）
 Skill：FastAPI 路径参数
 """

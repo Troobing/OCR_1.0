@@ -1,7 +1,6 @@
 /**
  * 纯文本转换 — 将 LLM 提取的混合文字+LaTeX 公式文本转为纯文本（公式转 Unicode）
  * 负责：把 $...$ / $$...$$ 公式渲染后取 textContent，方便复制粘贴到不支持 LaTeX 的环境
- * Config: 无
  * （复制全文按钮背后的文本处理逻辑）
  * Skill：KaTeX、DOMParser
  */

@@ -1,5 +1,6 @@
 /**
  * 前端入口 — React 渲染根节点、Ant Design 主题配置
+ * 负责：渲染 React 根节点
  * Config: colorPrimary 主题色、全局 Ant Design token
  * （网页启动入口 + 全局粉色主题）
  * Skill：Ant Design ConfigProvider
